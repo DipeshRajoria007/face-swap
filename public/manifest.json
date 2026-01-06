@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "FaceSwap",
+  "version": "0.1.0",
+  "description": "Instantly swap user identities by injecting auth tokens from clipboard.",
+  "action": {
+    "default_title": "FaceSwap",
+    "default_popup": "popup/index.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "cookies",
+    "storage",
+    "clipboardRead",
+    "offscreen"
+  ],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "commands": {
+    "swap-identity": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Swap identity from clipboard"
+    }
+  }
+}
