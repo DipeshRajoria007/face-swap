@@ -13,11 +13,20 @@ import {
   executeScript,
   queryActiveTab,
   removeCookie,
-  sendRuntimeMessage
+  sendRuntimeMessage,
+  sendTabMessage
 } from './utils/chrome';
-import type { ClipboardResponse, SwapResponse } from './shared/messaging';
+import type {
+  ClipboardResponse,
+  LogLevel,
+  LogResponse,
+  SwapResponse,
+  ToastResponse,
+  ToastVariant
+} from './shared/messaging';
 
 const OFFSCREEN_DOCUMENT_URL = chrome.runtime.getURL('offscreen/index.html');
+const RELOAD_DELAY_MS = 650;
 const BADGE = {
   ok: { text: 'OK', color: '#16a34a' },
   warn: { text: 'WARN', color: '#f59e0b' },
@@ -97,6 +106,58 @@ const readClipboardText = async (): Promise<string> => {
   }
 };
 
+const logToTabConsole = async (
+  tabId: number | undefined,
+  level: LogLevel,
+  message: string,
+  details?: string
+): Promise<void> => {
+  const prefix = '[FaceSwap]';
+  const logger =
+    level === 'error' ? console.error : level === 'warn' ? console.warn : console.info;
+
+  if (details) {
+    logger(prefix, message, details);
+  } else {
+    logger(prefix, message);
+  }
+
+  if (!tabId) {
+    return;
+  }
+
+  try {
+    await sendTabMessage<LogResponse>(tabId, {
+      type: MESSAGE_TYPES.LOG_MESSAGE,
+      target: 'content',
+      level,
+      message,
+      details
+    });
+  } catch {
+    // Ignore console relay errors.
+  }
+};
+
+const notifyTabToast = async (
+  tabId: number,
+  variant: ToastVariant,
+  message: string,
+  description?: string
+): Promise<void> => {
+  try {
+    await sendTabMessage<ToastResponse>(tabId, {
+      type: MESSAGE_TYPES.SHOW_TOAST,
+      target: 'content',
+      variant,
+      message,
+      description
+    });
+  } catch {
+    // Ignore toast errors so swaps still proceed.
+  }
+};
+
 const clearAuthCookies = async (pageUrl: string): Promise<boolean> => {
   const urls = buildCookieRemovalUrls(pageUrl);
   const results = await Promise.allSettled(
@@ -112,8 +173,8 @@ const injectTokenAndReload = async (tabId: number, token: string): Promise<void>
   const [{ result }] = await executeScript<{ ok: boolean; error?: string }>({
     target: { tabId },
     world: 'MAIN',
-    args: [token, AUTH_TOKEN_KEY],
-    func: (clipboardToken: string, storageKey: string) => {
+    args: [token, AUTH_TOKEN_KEY, RELOAD_DELAY_MS],
+    func: (clipboardToken: string, storageKey: string, reloadDelayMs: number) => {
       if (!clipboardToken || !clipboardToken.trim()) {
         return { ok: false, error: 'Clipboard was empty.' };
       }
@@ -124,32 +185,9 @@ const injectTokenAndReload = async (tabId: number, token: string): Promise<void>
         return { ok: false, error: 'Unable to write token to localStorage.' };
       }
 
-      const existing = document.getElementById('faceswap-toast');
-      if (existing) {
-        existing.remove();
-      }
-
-      const toast = document.createElement('div');
-      toast.id = 'faceswap-toast';
-      toast.textContent = 'Identity swapped';
-      toast.style.position = 'fixed';
-      toast.style.right = '16px';
-      toast.style.bottom = '16px';
-      toast.style.zIndex = '2147483647';
-      toast.style.padding = '10px 12px';
-      toast.style.background = 'rgba(14, 17, 22, 0.92)';
-      toast.style.color = '#f8fafc';
-      toast.style.font = '600 12px/1.2 "Space Grotesk", "IBM Plex Sans", system-ui';
-      toast.style.borderRadius = '10px';
-      toast.style.boxShadow = '0 10px 22px -18px rgba(14, 17, 22, 0.6)';
-      toast.style.letterSpacing = '0.02em';
-      toast.style.textTransform = 'uppercase';
-      document.documentElement.appendChild(toast);
-
       setTimeout(() => {
-        toast.remove();
         location.reload();
-      }, 120);
+      }, reloadDelayMs);
 
       return { ok: true };
     }
@@ -163,36 +201,58 @@ const injectTokenAndReload = async (tabId: number, token: string): Promise<void>
 const swapIdentityOnActiveTab = async (): Promise<SwapResponse> => {
   const tab = await queryActiveTab();
   if (!tab?.id || !tab.url) {
+    await logToTabConsole(undefined, 'error', 'No active tab found.');
     await setBadge(BADGE.err);
     return { ok: false, error: 'No active tab found.' };
   }
 
   if (!isAllowedUrl(tab.url, DEFAULT_ALLOWLIST)) {
+    await logToTabConsole(tab.id, 'error', 'Domain is not allowlisted.', tab.url);
     await setBadge(BADGE.no);
+    await notifyTabToast(tab.id, 'error', 'Domain is not allowlisted.');
     return { ok: false, error: 'Domain is not allowlisted.' };
   }
 
-  const clipboardText = await readClipboardText();
-  const token = clipboardText.trim();
-  if (!token) {
+  try {
+    const clipboardText = await readClipboardText();
+    const token = clipboardText.trim();
+    if (!token) {
+      await logToTabConsole(tab.id, 'error', 'Clipboard is empty.');
+      await setBadge(BADGE.err);
+      await notifyTabToast(tab.id, 'error', 'Clipboard is empty.');
+      return { ok: false, error: 'Clipboard is empty.' };
+    }
+
+    const cookiesCleared = await clearAuthCookies(tab.url);
+    await injectTokenAndReload(tab.id, token);
+
+    if (!cookiesCleared) {
+      await logToTabConsole(
+        tab.id,
+        'warn',
+        'Token set, but cookie may not have been cleared.'
+      );
+      await setBadge(BADGE.warn);
+      await notifyTabToast(tab.id, 'warning', 'Token set, but cookie may not have been cleared.');
+      return { ok: true, warning: 'Token set, but cookie may not have been cleared.' };
+    }
+
+    await setBadge(BADGE.ok);
+    await notifyTabToast(tab.id, 'success', 'Identity swapped successfully.');
+    return { ok: true };
+  } catch (error) {
+    const message = asErrorMessage(error, 'Swap failed.');
+    const details = error instanceof Error ? error.stack : undefined;
+    await logToTabConsole(tab.id, 'error', message, details);
     await setBadge(BADGE.err);
-    return { ok: false, error: 'Clipboard is empty.' };
+    await notifyTabToast(tab.id, 'error', message);
+    return { ok: false, error: message };
   }
-
-  const cookiesCleared = await clearAuthCookies(tab.url);
-  await injectTokenAndReload(tab.id, token);
-
-  if (!cookiesCleared) {
-    await setBadge(BADGE.warn);
-    return { ok: true, warning: 'Token set, but cookie may not have been cleared.' };
-  }
-
-  await setBadge(BADGE.ok);
-  return { ok: true };
 };
 
 const runSwap = async (): Promise<SwapResponse> => {
   if (swapInProgress) {
+    await logToTabConsole(undefined, 'warn', 'Swap already in progress.');
     return { ok: false, error: 'Swap already in progress.' };
   }
 

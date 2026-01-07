@@ -33,6 +33,14 @@ export const sendRuntimeMessage = async <TResponse>(
     chrome.runtime.sendMessage(message, callback);
   });
 
+export const sendTabMessage = async <TResponse>(
+  tabId: number,
+  message: unknown
+): Promise<TResponse> =>
+  chromePromise<TResponse>((callback) => {
+    chrome.tabs.sendMessage(tabId, message, callback);
+  });
+
 export const queryActiveTab = async (): Promise<chrome.tabs.Tab | undefined> => {
   const tabs = await chromePromise<chrome.tabs.Tab[]>((callback) => {
     chrome.tabs.query({ active: true, currentWindow: true }, callback);

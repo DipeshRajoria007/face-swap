@@ -11,9 +11,10 @@ export default defineConfig({
     target: 'es2020',
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, 'src/popup/index.html'),
-        offscreen: resolve(__dirname, 'src/offscreen/index.html'),
-        background: resolve(__dirname, 'src/background.ts')
+        popup: resolve(__dirname, 'popup/index.html'),
+        offscreen: resolve(__dirname, 'offscreen/index.html'),
+        background: resolve(__dirname, 'src/background.ts'),
+        content: resolve(__dirname, 'src/content/index.tsx')
       },
       output: {
         entryFileNames: '[name].js',
