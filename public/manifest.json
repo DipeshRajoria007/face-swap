@@ -36,7 +36,8 @@
     "cookies",
     "storage",
     "clipboardRead",
-    "offscreen"
+    "offscreen",
+    "windows"
   ],
   "host_permissions": ["http://*/*", "https://*/*"],
   "commands": {

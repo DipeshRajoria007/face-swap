@@ -28,18 +28,20 @@ export const chromePromiseVoid = (
 
 export const sendRuntimeMessage = async <TResponse>(
   message: unknown
-): Promise<TResponse> =>
-  chromePromise<TResponse>((callback) => {
+): Promise<TResponse> => {
+  return chromePromise<TResponse>((callback) => {
     chrome.runtime.sendMessage(message, callback);
   });
+};
 
 export const sendTabMessage = async <TResponse>(
   tabId: number,
   message: unknown
-): Promise<TResponse> =>
-  chromePromise<TResponse>((callback) => {
+): Promise<TResponse> => {
+  return chromePromise<TResponse>((callback) => {
     chrome.tabs.sendMessage(tabId, message, callback);
   });
+};
 
 export const queryActiveTab = async (): Promise<chrome.tabs.Tab | undefined> => {
   const tabs = await chromePromise<chrome.tabs.Tab[]>((callback) => {
@@ -50,26 +52,36 @@ export const queryActiveTab = async (): Promise<chrome.tabs.Tab | undefined> => 
 
 export const executeScript = async <TResult>(
   details: chrome.scripting.ScriptInjection
-): Promise<chrome.scripting.InjectionResult<TResult>[]> =>
-  chromePromise((callback) => {
+): Promise<chrome.scripting.InjectionResult<TResult>[]> => {
+  return chromePromise((callback) => {
     chrome.scripting.executeScript(details, callback);
   });
+};
 
 export const removeCookie = async (
   details: chrome.cookies.RemoveDetails
-): Promise<chrome.cookies.Details | null> =>
-  chromePromise((callback) => {
+): Promise<chrome.cookies.Details | null> => {
+  return chromePromise((callback) => {
     chrome.cookies.remove(details, callback);
   });
+};
 
 export const createOffscreenDocument = async (
   details: chrome.offscreen.CreateParameters
-): Promise<void> =>
-  chromePromiseVoid((callback) => {
+): Promise<void> => {
+  return chromePromiseVoid((callback) => {
     chrome.offscreen.createDocument(details, callback);
   });
+};
 
-export const closeOffscreenDocument = async (): Promise<void> =>
-  chromePromiseVoid((callback) => {
+export const closeOffscreenDocument = async (): Promise<void> => {
+  return chromePromiseVoid((callback) => {
     chrome.offscreen.closeDocument(callback);
   });
+};
+
+export const focusWindow = async (windowId: number): Promise<void> => {
+  return chromePromiseVoid((callback) => {
+    chrome.windows.update(windowId, { focused: true }, () => callback());
+  });
+};
