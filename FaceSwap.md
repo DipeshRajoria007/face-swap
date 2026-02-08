@@ -169,17 +169,16 @@ All actions should be executable via a **single shortcut or click**.
 ### Components
 
 1. **Manifest (MV3)**
-    - Permissions: `cookies`, `storage`, `activeTab`, `scripting`, `clipboardRead`, `offscreen`
+    - Permissions: `cookies`, `storage`, `activeTab`, `scripting`, `clipboardRead`, `offscreen`, `windows`
     - Commands API for keyboard shortcuts
 2. **Background Service Worker**
     - Listens for keyboard shortcut events
     - Validates domain allowlist
-    - Requests clipboard read via offscreen document
+    - Reads clipboard via active-tab script (preferred) and falls back to offscreen document when needed
     - Clears authentication cookies
     - Injects localStorage mutation script
 3. **Offscreen Document**
-    - Reads clipboard using `navigator.clipboard.readText()`
-    - Responds to background worker with clipboard content
+    - Fallback clipboard reader when active-tab read is blocked by focus/permissions
 4. **Injected Script (MAIN world)**
     - Sets localStorage auth token
     - Triggers page reload
