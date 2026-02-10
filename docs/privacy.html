@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FaceSwap Extension Privacy Policy</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        margin: 0;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        background: #f6f5f2;
+        color: #1b1b1b;
+      }
+      main {
+        max-width: 760px;
+        margin: 48px auto;
+        padding: 0 20px 64px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 18px 40px -30px rgba(0, 0, 0, 0.35);
+      }
+      header {
+        padding: 32px 32px 16px;
+        border-bottom: 1px solid #ece7de;
+      }
+      section {
+        padding: 20px 32px;
+        border-bottom: 1px solid #f0ede7;
+      }
+      section:last-of-type {
+        border-bottom: none;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+      p {
+        margin: 0 0 12px;
+        line-height: 1.6;
+      }
+      ul {
+        margin: 0 0 12px 18px;
+        padding: 0;
+        line-height: 1.6;
+      }
+      .meta {
+        font-size: 14px;
+        color: #4a4a4a;
+      }
+      .note {
+        font-size: 14px;
+        color: #4a4a4a;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>FaceSwap Extension Privacy Policy</h1>
+        <p class="meta"><strong>Effective date:</strong> February 10, 2026</p>
+        <p class="meta"><strong>Company:</strong> [Company Name]</p>
+      </header>
+
+      <section>
+        <h2>Summary</h2>
+        <p>
+          FaceSwap is an internal productivity extension that swaps a user session on
+          allowlisted sites by reading a token from the clipboard at the user’s request.
+          We do not sell or share user data, and we do not use data for advertising or
+          analytics.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data We Access</h2>
+        <ul>
+          <li>
+            <strong>Authentication information:</strong> The extension reads an auth
+            token from the clipboard only when the user triggers a swap. The token is
+            used immediately to set the target site’s localStorage and is not stored or
+            transmitted by the extension.
+          </li>
+          <li>
+            <strong>Web activity (active tab URL):</strong> The extension reads the
+            active tab URL to verify it is allowlisted and to clear the target site’s
+            auth cookie as part of the swap.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>How We Use Data</h2>
+        <p>
+          We use the clipboard token and active tab URL solely to perform the identity
+          swap on the current allowlisted site after a user-initiated action.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data Storage</h2>
+        <p>
+          The extension does not store user data. The token is written into the target
+          site’s localStorage as part of the swap, and the target site’s auth cookie may
+          be cleared. The extension itself does not persist or transmit any data.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data Sharing</h2>
+        <p>
+          We do not sell, transfer, or share user data with third parties. No analytics
+          or tracking services are used.
+        </p>
+      </section>
+
+      <section>
+        <h2>Third-Party Services</h2>
+        <p>
+          The extension does not execute remote code. The popup UI may load fonts from
+          Google Fonts, which could receive standard web request metadata (such as IP
+          address) from the browser.
+        </p>
+      </section>
+
+      <section>
+        <h2>Changes</h2>
+        <p>
+          We may update this policy from time to time. The effective date above will
+          reflect the latest version.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>For questions, contact <strong>[privacy@company.com]</strong>.</p>
+        <p class="note">
+          Replace bracketed fields with your organization details before publishing.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
