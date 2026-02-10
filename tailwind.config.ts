@@ -5,16 +5,22 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Space Grotesk"', '"IBM Plex Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif']
+        display: ['"Instrument Serif"', 'serif'],
+        body: ['"Instrument Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace']
       },
       colors: {
-        ink: '#0e1116',
-        clay: '#f5f2ec',
-        ember: '#f05d23',
-        pine: '#0f766e'
+        ink: '#14131b',
+        paper: '#f7f1e7',
+        fog: '#edf1f3',
+        copper: '#c25a3a',
+        lagoon: '#1f6f78',
+        ruby: '#b6483d',
+        iris: '#5b5d9a'
       },
       boxShadow: {
-        soft: '0 10px 30px -20px rgba(14, 17, 22, 0.35)'
+        soft: '0 10px 30px -20px rgba(20, 19, 27, 0.35)',
+        bloom: '0 18px 40px -28px rgba(17, 20, 28, 0.55)'
       }
     }
   },
